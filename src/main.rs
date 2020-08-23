@@ -1,5 +1,3 @@
-#![feature(vec_remove_item)]
-
 use std::io::Write;
 use sha2::Sha256;
 use sha2::digest::Digest;
