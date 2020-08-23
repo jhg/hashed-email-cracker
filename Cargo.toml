@@ -1,8 +1,19 @@
 [package]
 name = "hashed-email-cracker"
 version = "0.1.0"
-authors = ["Jesús Hernández Gormaz <jesus@wiris.com>"]
+description = "Brute-force to find email hashed with sha256"
+keywords = ["cracker", "brute-force", "email", "hash", "sha256"]
+categories = ["command-line-utilities"]
+authors = ["Jesús Hernández <jesushdez@protonmail.com>"]
 edition = "2018"
+license = "Unlicense"
+repository = "https://github.com/jhg/hashed-email-cracker"
+readme = "README.md"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+    "LICENSE",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
