@@ -4,33 +4,45 @@ use sha2::digest::Digest;
 use rayon::prelude::*;
 use structopt::StructOpt;
 
+/// Strings generator.
+/// 
+/// Generate strings with combinations of the given chars as string with a maximum length.
+/// 
+/// For example, for `abc` with maximum length of 2 the generated strings will be:
+///  - `a`
+///  - `b`
+///  - `c`
+///  - `aa`
+///  - `ab`
+///  - `ac`
+///  - `ba`
+///  - `bb`
+///  - `bc`
+///  - `ca`
+///  - `cb`
+///  - `cc`
 struct StringsGenerator<'a> {
-    dictionary_source: &'a str,
-    chars_generators: Vec<std::str::Chars<'a>>,
+    dictionary: &'a str,
+    generators: Vec<std::str::Chars<'a>>,
     current_combination: String,
 }
 
 impl<'a> StringsGenerator<'a> {
-    fn new(max_length: usize, dictionary_source: &'a str) -> Self {
+    fn new(max_length: usize, dictionary: &'a str) -> Self {
         let mut generator = Self {
-            dictionary_source,
-            chars_generators: Vec::new(),
+            dictionary,
+            generators: Vec::new(),
             current_combination: String::with_capacity(max_length),
         };
-        while generator.chars_generators.len() < max_length {
-            generator.chars_generators.push(generator.dictionary())
+        while generator.generators.len() < max_length {
+            generator.generators.push(generator.dictionary.chars())
         }
         return generator;
     }
 
     #[inline]
-    fn dictionary(&self) -> std::str::Chars<'a> {
-        self.dictionary_source.chars()
-    }
-
-    #[inline]
     fn increment_last_char(&mut self) -> Result<(), ()> {
-        if let Some(chars) = self.chars_generators.last_mut() {
+        if let Some(chars) = self.generators.last_mut() {
             if let Some(next_char) = chars.next() {
                 self.current_combination.pop();
                 self.current_combination.push(next_char);
@@ -46,20 +58,20 @@ impl<'a> StringsGenerator<'a> {
         {
             let mut tries = 0;
             // This increment the current last char before to initialize previous last again to do carry increment
-            while self.increment_last_char().is_err() && self.chars_generators.len() != 0 {
+            while self.increment_last_char().is_err() && self.generators.len() != 0 {
                 // Remove empty chars iterator and last char to carry and initialize again
                 self.current_combination.pop();
-                self.chars_generators.pop();
+                self.generators.pop();
                 tries += 1;
             }
-            if self.chars_generators.len() == 0 {
+            if self.generators.len() == 0 {
                 return Err(());
             }
             while tries != 0 {
                 // Recover char length removed by failed increment before of carry
-                let mut new_chars = self.dictionary();
+                let mut new_chars = self.dictionary.chars();
                 self.current_combination.push(new_chars.next().unwrap());
-                self.chars_generators.push(new_chars);
+                self.generators.push(new_chars);
                 tries -= 1;
             }
         }
@@ -69,17 +81,17 @@ impl<'a> StringsGenerator<'a> {
             if self.increment_last_char().is_err() {
                 // Remove empty chars iterator and last char to carry and initialize again
                 self.current_combination.pop();
-                self.chars_generators.pop();
+                self.generators.pop();
                 // Stop recursive carry increment if it consumed last chars iterator
-                if self.chars_generators.len() == 0 {
+                if self.generators.len() == 0 {
                     return Err(());
                 }
                 // This increment the current last char before to initialize previous last again to do carry increment
                 self.increment()?;
                 // Recover char length removed by failed increment before of carry
-                let mut new_chars = self.dictionary();
+                let mut new_chars = self.dictionary_source.chars();
                 self.current_combination.push(new_chars.next().unwrap());
-                self.chars_generators.push(new_chars);
+                self.generators.push(new_chars);
             }
         }
         Ok(())
